@@ -1,0 +1,9 @@
+---
+
+- name: Se configura el NFS
+  hosts: nfs
+  vars_files:
+    - "group_vars/nfs.yml"
+  gather_facts: true
+  roles:
+    - 1-nfs

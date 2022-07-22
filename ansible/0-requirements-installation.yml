@@ -1,0 +1,12 @@
+---
+
+- name: Instalación de los requerimientos iniciales
+  hosts: 
+  - master
+  - workers
+  become: yes
+  roles:
+    - 0-requirements
+  vars_files:
+    - "group_vars/common.yml"
+  gather_facts: true
