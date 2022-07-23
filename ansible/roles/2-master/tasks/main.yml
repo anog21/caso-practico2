@@ -1,0 +1,3 @@
+---
+# tasks file for 2-master
+- include_tasks: 2-master.yml

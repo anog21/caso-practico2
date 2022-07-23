@@ -1,0 +1,10 @@
+---
+# Playbook incluyendo el master y los workers para la instalación de requerimientos iniciales dentro del rol de requirements
+- name: Instalación de los requerimientos iniciales
+  hosts: 
+  - master
+  - workers
+  become: yes
+  roles:
+    - 0-requirements
+  gather_facts: true

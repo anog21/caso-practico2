@@ -1,0 +1,39 @@
+---
+- name: Instalamos mount nfs-utils
+  yum:
+    name: nfs-utils
+    state: latest
+  become: yes
+- name: Se crea el directorio para el NFS
+  file:
+    path: /srv/nfs
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: 0777
+  become: yes
+- name: Se monta el NFS
+  mount:
+    fstype: nfs
+    opts: defaults
+    dump: 0
+    passno: 0
+    state: mounted
+    src: "10.0.0.12:/srv/nfs"
+    path: "/srv/nfs"
+  become: yes
+
+- name: Se obtiene el comando para unir los workers
+  set_fact: 
+    join_command: "{{ lookup('file','./token_worker' )}}"
+- debug:
+    msg: "{{ join_command }}"
+
+- name: Se une el worker al master
+  shell: "{{ join_command }}"
+  register: kubeadm_join
+  become: yes
+  
+- name: Se lanza por pantalla el resultado de la unión de los workers al master
+  debug:
+    msg: "{{ kubeadm_join.stdout_lines }}"

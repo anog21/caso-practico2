@@ -1,0 +1,8 @@
+---
+
+- name: Se lanza la aplicación
+  hosts: master
+  gather_facts: true
+  roles:
+    - 4-webapp
+  ignore_errors: yes

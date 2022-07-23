@@ -1,0 +1,13 @@
+
+[all:vars]
+ansible_user=ansible
+### Instancia del master
+[master]
+51.142.177.90
+### Nodo worker
+[workers]
+51.142.179.97
+51.142.181.114
+### Servidor NFS
+[nfs]
+51.142.179.193

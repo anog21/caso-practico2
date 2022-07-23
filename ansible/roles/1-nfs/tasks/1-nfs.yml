@@ -1,0 +1,70 @@
+- name: Se actualizan los paquetes del sistema
+  dnf:
+    name:  "*"
+    state: latest
+  become: yes
+
+- name: Se instalan los paquetes para el NFS
+  dnf:
+    name: 
+      - nfs-utils
+      - nfs4-acl-tools
+    state: present
+  become: yes
+
+- name: Se crea el directorio del NFS
+  file:
+    path: /srv/nfs
+    state: directory
+  become: yes
+
+- name: Se añaden el master y workers al /etc/exports
+  lineinfile:
+    path: /etc/exports
+    state: present
+    line: "{{ item }}"
+  with_items:
+  - '/srv/nfs  10.0.0.10/32(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,no_root_squash,no_all_squash)'
+  - '/srv/nfs  10.0.0.11/32(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,no_root_squash,no_all_squash)'
+  - '/srv/nfs  10.0.0.13/32(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,no_root_squash,no_all_squash)'
+  become: yes
+
+- name: Se inicia y se habilitaa el servicio de NFS
+  systemd:
+    name: nfs-server
+    state: started
+    enabled: yes
+    masked: no
+  become: yes
+  
+- name: Se recarga toda la configuración del fichero /etc/exports
+  shell: exportfs -r
+  become: yes
+
+# - name: Se habilitan los servicios usados por NFS
+#   firewalld:
+#     service: nfs
+#     permanent: true
+#     state: enabled
+#   become: yes
+
+# - name: Habilitamos servicios usados por NFS rpc-bind
+#   firewalld:
+#     service: rpc-bind
+#     permanent: true
+#     state: enabled
+#   become: yes
+
+# - name: Habilitamos servicios usados por NFS mountd
+#   firewalld:
+#     service: mountd
+#     permanent: true
+#     state: enabled
+#   become: yes
+  
+# - name: Reiniciando el servicio Firewalld 
+#   systemd:
+#     name: firewalld
+#     state: restarted
+#   become: yes
+  

@@ -1,0 +1,7 @@
+---
+
+- name: Se configura el NFS
+  hosts: nfs
+  gather_facts: true
+  roles:
+    - 1-nfs

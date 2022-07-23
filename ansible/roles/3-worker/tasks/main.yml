@@ -1,0 +1,3 @@
+---
+# tasks file for 3-worker
+- include_tasks: 3-worker.yml

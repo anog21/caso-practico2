@@ -1,0 +1,91 @@
+---
+
+- name: Se hace un update de todos los paquetes con DNF
+  dnf:
+    name:  "*"
+    state: latest
+
+- name: Se desactiva la memoria Swap
+  shell: swapoff -a
+  become: yes
+
+- name: Se habilita el módulo de Kernel br_netfilter
+  modprobe:
+    name: br_netfilter
+    state: present
+  become: yes
+
+- name: Se eliminan la información de las tablas de IPs
+  shell: echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables
+  become: yes
+  
+- name: Se crea el archivo /etc/sysctl.d/k8s.conf
+  copy:
+    dest: "/etc/sysctl.d/k8s.conf"
+    content: |
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+      net.ipv4.ip_forward = 1
+  become: yes
+
+- name: Se recargan las variables del sysctl 
+  shell: sysctl --system
+  become: yes
+
+- name: Se añaden los repositorios del Cri-o 
+  shell: | 
+    VERSION=1.21
+    OS=CentOS_8
+    sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/devel:kubic:libcontainers:stable.repo
+    sudo curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo
+
+- name: Se instala Cri-o
+  dnf:
+    name:
+      - cri-o 
+    state: present
+
+- name: Se inicia y activa Cri-o
+  systemd:
+    state: started
+    name: crio
+    enabled: yes
+  become: yes
+
+- name: Se configura el repositorio de Kubernetes
+  yum_repository:
+    name: Kubernetes
+    description: Repositorio oficial de Kubernetes
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    enabled: yes
+    gpgcheck: yes
+    repo_gpgcheck: yes
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    exclude: kubelet kubeadm kubectl
+  become: yes
+
+- name: Se instalan los paquetes de Kubernetes (kubelet, kubeadm, kubectl)
+  dnf:
+    name: 
+    - kubelet
+    - kubeadm
+    - kubectl
+    state: present
+    disable_excludes: Kubernetes
+  become: yes
+
+- name: Se inicia y activa el servicio de Kubernetes
+  systemd:
+    name: kubelet
+    state: started
+    enabled: yes
+    masked: no
+  become: yes
+
+- name: Se instala Helm
+  shell: |
+    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+    chmod 700 get_helm.sh
+    sh get_helm.sh
+    rm -f get_helm.sh
+  become: yes

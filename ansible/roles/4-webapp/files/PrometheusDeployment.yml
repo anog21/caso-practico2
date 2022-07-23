@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-deployment
+  namespace: application
+  labels:
+    app: prometheus-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-server
+  template:
+    metadata:
+      labels:
+        app: prometheus-server
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus
+          args:
+            - "--storage.tsdb.retention.time=12h"
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus/"
+          ports:
+            - containerPort: 9090
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500M
+            limits:
+              cpu: 1
+              memory: 1Gi
+          volumeMounts:
+            - name: prometheus-volume-config
+              mountPath: "/etc/prometheus"
+            - name: prometheus-volume
+              mountPath: "/prometheus"
+          securityContext:
+            allowPrivilegeEscalation: true
+      volumes:
+        - name: prometheus-volume
+          persistentVolumeClaim:
+            claimName: prometheus-pvc
+
+        - name: prometheus-volume-config
+          configMap:
+            defaultMode: 420
+            name: prometheus-server-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: application
+  annotations:
+   prometheus.io/scrape: "true"
+   prometheus.io/port: "9090"
+spec:
+  ports:
+  - name: http
+    port: 9090
+    protocol: TCP
+    targetPort: 80
+  type: NodePort
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-ingress
+  namespace: application
+  annotations:
+      haproxy.org/path-rewrite: "/"
+spec:
+  rules:
+  - host: master.azure
+    http:
+      paths:
+      - path: /
+        pathType: "Prefix"
+        backend:
+          service:
+            name: http
+            port:
+              number: 80
