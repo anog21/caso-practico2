@@ -1,4 +1,0 @@
----
-
-kubernets_domain: 'unir.com'
-common_packages: ['net-tools', 'wget']

@@ -1,8 +1,0 @@
----
-
-- name: Se configuran los workers
-  hosts: workers
-  gather_facts: true
-  roles:
-    - 3-worker
-  ignore_errors: yes

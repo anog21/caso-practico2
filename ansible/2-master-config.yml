@@ -1,8 +1,0 @@
----
-
-- name: Se configura el Master
-  hosts: master
-  gather_facts: true
-  roles:
-    - 2-master
-  ignore_errors: yes
