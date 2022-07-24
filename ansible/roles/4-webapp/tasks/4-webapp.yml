@@ -1,6 +1,6 @@
 ---
-
-- name: Copiando los archivos de las Aplicaciones
+# En esta task se lanzan 5 scripts con diferentes usos: el persistent-volume incluye la configuración del volumen persistente a utilizar, integrado en este caso con el NFS; el persistent-volume-claim, para el volumen que usará el pod; y 3 archivos destinados al despliegue de la aplicación Prometheus. 
+- name: Se copian todos los archivos de los despliegues
   copy:
     src: "{{ item }}"
     dest: "/root/{{ item }}"
@@ -13,13 +13,12 @@
     - PrometheusRole.yml
   become: yes
 
-- name: Creando namespace
+- name: Se crea el namespace
   shell: "kubectl create namespace application"
   become: yes
 
-- name: Se aplican los volumenes
+- name: Se lanzan los despliegues
   shell: "kubectl apply -f /root/{{ item }}"
-  register: kubectl_apply_app
   with_items:
     - persistent-volume.yml
     - persistent-volume-claim.yml
