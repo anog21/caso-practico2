@@ -1,5 +1,5 @@
 #!/bin/bash
-
+## Script que lanza todos los comandos de terraform y almacena las IPs públicas para inyectarlas en el Hosts de Ansible
 terraform init
 terraform validate
 terraform plan -var-file="./vars.tfvars"
