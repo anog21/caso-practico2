@@ -1,5 +1,5 @@
 ---
-- name: Instalamos mount nfs-utils
+- name: Se instalaa el mount nfs-utils
   yum:
     name: nfs-utils
     state: latest
@@ -71,7 +71,7 @@
   shell: kubectl create namespace tigera-operator
   become: yes
 
-- name: Install Calico SDN
+- name: Se instala la SDN de Calico
   shell: /usr/local/bin/helm install calico projectcalico/tigera-operator --version v3.23.3 --namespace tigera-operator
   become: yes
 
